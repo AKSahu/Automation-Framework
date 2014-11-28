@@ -1,0 +1,67 @@
+<?xml version='1.0'?>
+<!-- Description : build.xml [To run the tests from the command line] -->
+
+<project name="core" basedir="." default="info">
+
+	<!-- /******************************************************************
+			Define properties
+	***********************************************************************/ -->
+	<property name="src" location="src" />
+	<property name="classes" location="classes" />
+	<property name="lib" location="lib" />
+	<property name="build" location="build" />
+
+	<!-- /******************************************************************
+			Path for all the jar files & classes
+	***********************************************************************/ -->
+	<path id="classpaths">
+		<fileset dir="${lib}" includes="*.jar" />
+		<pathelement location="${classes}" />
+	</path>
+
+
+	<!-- /******************************************************************
+			Get all the environment and test information
+	***********************************************************************/ -->
+	<target name="info">
+		<echo message="Java Version : ${ant.java.version}" />
+		<echo message="Ant Version : ${ant.version}" />
+		<echo message="Project Name : ${ant.project.name}" />
+		<echo message="User Name : ${user.name}" />
+		<echo message="Project Location : ${user.dir}" />
+	</target>
+
+
+	<!-- /******************************************************************
+			Clean the logs, reports, screenshots, zip and classes folders
+	***********************************************************************/ -->
+	<target name="clean" description="Deleting the logs, reports, screenshots, zip and classes folders" depends="info">
+		<delete dir="${classes}" />
+	</target>
+
+
+	<!-- /******************************************************************
+			Creates the classes, reports, screenshot, logs and zip folders
+	***********************************************************************/ -->
+	<target name="setup" depends="clean" description="Creates the classes, reports, and zip folders">
+		<mkdir dir="${classes}" />
+		<mkdir dir="${build}" />
+	</target>
+
+
+	<!-- /******************************************************************
+			Compile all the classes
+	***********************************************************************/ -->
+	<target name="compile" depends="setup">
+		<javac srcdir="${src}" destdir="${classes}" classpathref="classpaths" debug="true" />
+	</target>
+
+
+	<!-- /******************************************************************
+			Create Java archive (jar) file of core automation framework(CoreAF) code
+	***********************************************************************/ -->
+	<target name="jar" depends="compile">
+		<jar destfile="${build}/coreAF.jar" basedir="classes" />
+	</target>
+
+</project>

@@ -1,0 +1,8 @@
+@author A. K. Sahu
+
+Important:
+
+	Please go through the "WebDriverAutomationTestingFrameworkSummery.ppt" before you start.
+	This ppt makes you to understand the framework functionality and goals.
+	
+	Thank you!
