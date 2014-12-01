@@ -1,0 +1,357 @@
+<?xml version='1.0'?>
+<!-- Description : build.xml [To run the tests from the command line] -->
+
+<project name="autoTest" basedir="." default="info">
+
+	<!-- /******************************************************************
+			Define properties
+	***********************************************************************/ -->
+	<property name="config.properties" location="config/config.properties" />
+	<property file="${config.properties}" prefix="config" />
+	<property name="core" value="${config.coreAFLoc}" />
+	<property name="src" location="src" />
+	<property name="classes" location="classes" />
+	<property name="reports" location="${config.reportsDirectory}" />
+	<property name="reprots.testng" location="${reports}/testng" />
+	<property name="reprots.reportng" location="${reports}/reportng" />
+	<property name="reprots.junit" location="${reports}/junit" />
+	<property name="reports.cobertura" location="${reports}/cobertura" />
+	<property name="reports.cobertura.instrumented-classes" location="${reports.cobertura}/instrumented-classes" />
+	<property name="reports.cobertura.report" location="${reports.cobertura}/report" />
+	<property name="reprots.xslt" location="${reports}/xslt" />
+	<property name="jars" location="${core}/lib" />
+	<property name="config" location="config" />
+	<property name="zip" location="zip" />
+	<property name="screenshots" location="${config.screenshotsDirectory}" />
+	<property name="logs" location="logs" />
+
+
+	<!-- /******************************************************************
+			Path for all the jar files & classes
+	***********************************************************************/ -->
+	<path id="classpaths">
+		<fileset dir="${jars}" includes="*.jar" />
+		<pathelement location="${classes}" />
+	</path>
+
+	<path id="cobertura.classpath">
+		<pathelement location="${reports.cobertura.instrumented-classes}">
+		</pathelement>
+		<fileset dir="${jars}">
+			<include name="cobertura-1.9.4.1.jar">
+			</include>
+			<include name="log4j-1.2.14.jar">
+			</include>
+			<include name="asm-3.0.jar">
+			</include>
+			<include name="jakarta-oro-2.0.8.jar">
+			</include>
+			<include name="asm-tree-3.0.jar">
+			</include>
+		</fileset>
+	</path>
+
+	<taskdef classpathref="cobertura.classpath" resource="tasks.properties" description="Task definations for Coburtura">
+	</taskdef>
+
+	<!-- /******************************************************************
+			Get all the environment and test information
+	***********************************************************************/ -->
+	<target name="info">
+		<echo message="Java Version : ${ant.java.version}">
+		</echo>
+		<echo message="Ant Version : ${ant.version}">
+		</echo>
+		<echo message="Project Name : ${ant.project.name}">
+		</echo>
+		<echo message="User Name : ${user.name}">
+		</echo>
+		<echo message="Project Location : ${user.dir}">
+		</echo>
+	</target>
+
+
+	<!-- /******************************************************************
+			Clean the logs, reports, screenshots, zip and classes folders
+	***********************************************************************/ -->
+	<target name="clean" description="Deleting the logs, reports, screenshots, zip and classes folders" depends="info">
+		<delete dir="${classes}" />
+		<delete dir="${reports}" />
+		<delete dir="test-output" />
+		<delete dir="${logs}" />
+		<delete dir="${screenshots}" />
+		<delete dir="${zip}" />
+	</target>
+
+
+	<!-- /******************************************************************
+			Creates the classes, reports, screenshot, logs and zip folders
+	***********************************************************************/ -->
+	<target name="setup" depends="clean" description="Creates the classes, reports, and zip folders">
+		<mkdir dir="${classes}" />
+		<mkdir dir="${reports}" />
+		<mkdir dir="${reprots.testng}" />
+		<mkdir dir="${reprots.junit}" />
+		<mkdir dir="${reports.cobertura}" />
+		<mkdir dir="${reports.cobertura.instrumented-classes}" />
+		<mkdir dir="${reports.cobertura.report}" />
+		<mkdir dir="${reprots.xslt}" />
+		<mkdir dir="${zip}" />
+		<mkdir dir="${screenshots}" />
+		<mkdir dir="${logs}" />
+
+		<!--<propertyfile file="${config.properties}">
+			<entry key="isTestCaseFailed" value="false" />
+		</propertyfile>-->
+	</target>
+
+
+	<!-- /******************************************************************
+			Compile all the classes
+	***********************************************************************/ -->
+	<target name="compile" depends="setup">
+		<copy todir="${classes}">
+			<fileset dir="${config}" />
+			<fileset file="${core}/src/log4j.properties" />
+		</copy>
+
+		<javac srcdir="${src};${core}/src" destdir="${classes}" classpathref="classpaths" debug="true" />
+	</target>
+
+
+	<!-- /******************************************************************
+			Run all the tests with group 'alltests' & using testng.xml
+	***********************************************************************/ -->
+	<!--
+	<target name="runAllTests" depends="compile">
+		<testng classpathref="classpaths" groups="alltests" outputdir="${reprots.testng}">
+			<xmlfileset dir="" includes="testng.xml" />
+		</testng>
+	</target>-->
+
+
+	<!-- /******************************************************************
+			Run all the tests with group 'alltests' & without using testng.xml
+	***********************************************************************/ -->
+	<target name="runAllTests" depends="reportngReport" />
+	<!--<target name="runAllTests" depends="testngReport" />-->
+
+	<!-- /******************************************************************
+				Ant task for generating ReportNG reports
+		***********************************************************************/ -->
+	<target name="reportngReport" depends="compile">
+		<testng classpathref="classpaths" groups="alltests" outputdir="${reprots.reportng}" useDefaultListeners="true" listener="org.uncommons.reportng.HTMLReporter,org.uncommons.reportng.JUnitXMLReporter,coreaf.framework.report.SmartReportListener">
+			<classfileset dir="${classes}" includes="**/*.class" />
+			<sysproperty key="org.uncommons.reportng.title" value="Automation - All Page Tests" />
+			<sysproperty key="org.uncommons.reportng.escape-output" value="off" />
+			<sysproperty key="net.sourceforge.cobertura.datafile" file="${reports.cobertura}/cobertura.ser" />
+		</testng>
+	</target>
+
+	<!-- /******************************************************************
+					Ant task for generating ReportNG reports
+			***********************************************************************/ -->
+	<target name="concurrentReport" depends="compile">
+		<testng classpathref="classpaths" groups="alltests" outputdir="${reprots.reportng}" useDefaultListeners="true" listener="org.uncommons.reportng.HTMLReporter,org.uncommons.reportng.JUnitXMLReporter,coreaf.framework.report.ConcurrentReportListener">
+			<classfileset dir="${classes}" includes="**/*.class" />
+			<sysproperty key="org.uncommons.reportng.title" value="Automation - All Page Tests" />
+			<sysproperty key="org.uncommons.reportng.escape-output" value="off" />
+			<sysproperty key="net.sourceforge.cobertura.datafile" file="${reports.cobertura}/cobertura.ser" />
+		</testng>
+	</target>
+
+	<!-- /******************************************************************
+			Ant task for generating TestNG reports
+	***********************************************************************/ -->
+	<target name="testngReport" depends="compile">
+		<testng classpathref="classpaths" groups="alltests" outputdir="${reprots.testng}">
+			<classfileset dir="${classes}" includes="**/*.class" />
+			<sysproperty key="org.uncommons.reportng.title" value="All Page Tests" />
+			<sysproperty key="org.uncommons.reportng.escape-output" value="off" />
+			<sysproperty key="net.sourceforge.cobertura.datafile" file="${reports.cobertura}/cobertura.ser" />
+		</testng>
+	</target>
+
+
+	<!-- /******************************************************************
+			Ant task for generating JUnit reports
+	***********************************************************************/ -->
+	<target name="junitReport" depends="runAllTests">
+		<junitreport todir="${reprots.junit}">
+			<fileset dir="${reprots.testng}/junitreports">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report todir="${reprots.junit}" />
+		</junitreport>
+	</target>
+
+
+	<!-- /******************************************************************
+			Generate the cobertura class files and cobertura.ser file
+	***********************************************************************/ -->
+	<target name="cobertura-instruments" depends="compile">
+		<cobertura-instrument todir="${reports.cobertura.instrumented-classes}" classpathref="cobertura.classpath" datafile="${reports.cobertura}/cobertura.ser">
+			<excludeclasses regex="org.apache.log4j.Logger">
+			</excludeclasses>
+			<fileset dir="${classes}">
+			</fileset>
+		</cobertura-instrument>
+	</target>
+
+
+	<!-- /******************************************************************
+			Automation code coverate test report
+	***********************************************************************/ -->
+	<target name="coberturaReport" depends="cobertura-instruments">
+		<testng classpathref="classpaths" groups="alltests" outputdir="${reprots.testng}">
+			<sysproperty key="net.sourceforge.cobertura.datafile" file="${reports.cobertura}/cobertura.ser">
+			</sysproperty>
+			<classpath location="${reports.cobertura.instrumented-classes}">
+			</classpath>
+			<classpath refid="cobertura.classpath">
+			</classpath>
+			<classfileset dir="${classes}" includes="**/*.class">
+			</classfileset>
+			<sysproperty key="org.uncommons.reportng.title" value="Cobertura Report">
+			</sysproperty>
+			<sysproperty key="org.uncommons.reportng.escape-output" value="off">
+			</sysproperty>
+		</testng>
+
+		<cobertura-report destdir="${reports.cobertura.report}" srcdir="${src}" datafile="${reports.cobertura}/cobertura.ser">
+		</cobertura-report>
+	</target>
+
+
+	<!-- /******************************************************************
+			Ant task for generating XSLT reports
+	***********************************************************************/ -->
+	<target name="xsltReport" depends="reportngReport">
+		<xslt in="${reprots.reportng}/testng-results.xml" style="xslt_style/testng-results.xsl" out="${reprots.xslt}/index.html" classpathref="classpaths" processor="SaxonLiaison">
+			<param name="testNgXslt.outputDir" expression="${reprots.xslt}" />
+			<param name="testNgXslt.showRuntimeTotals" expression="true" />
+		</xslt>
+	</target>
+
+
+	<!-- /******************************************************************
+			Generate all types of reports
+	***********************************************************************/ -->
+	<target name="allReports">
+		<antcall target="coberturaReport" />
+		<xslt in="${reprots.testng}/testng-results.xml" style="xslt_style/testng-results.xsl" out="${reprots.xslt}/index.html" classpathref="classpaths" processor="SaxonLiaison">
+			<param name="testNgXslt.outputDir" expression="${reprots.xslt}" />
+			<param name="testNgXslt.showRuntimeTotals" expression="true" />
+		</xslt>
+		<junitreport todir="${reprots.junit}">
+			<fileset dir="${reprots.testng}/junitreports">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report todir="${reprots.junit}" />
+		</junitreport>
+	</target>
+
+
+	<!-- /******************************************************************
+			Zip all the reports under the ${reports} directory
+	***********************************************************************/ -->
+	<target name="zipReport" depends="allReports">
+		<zip destfile="${zip}/testReport.zip" duplicate="preserve">
+			<zipfileset dir="${reports}" />
+		</zip>
+	</target>
+
+
+	<!-- /******************************************************************
+			Send an email by zipping all the reports as an attachment
+	***********************************************************************/ -->
+	<target name="sendMailReport">
+		<!--TODO: depends="zipReport"-->
+		<mail encoding="mime" mailhost="smtp.gmail.com" mailport="25" subject="Automation Test Report on '${browserName}' browser" ssl="false" user="myMailId@gmail.com" password="mypassword">
+			<from address="myMailId@gmail.com" />
+			<to address="friend1@gmail.com" />
+			<cc address="friend2@gmail.com" />
+			<message>
+				Hello,
+					
+				Please find the attachment for the report.
+				
+				Thank you,
+				Automation Team
+			</message>
+			<attachments>
+				<fileset dir="${zip}" />
+			</attachments>
+		</mail>
+	</target>
+
+
+	<!-- /******************************************************************
+			Rerun all failed tests
+	***********************************************************************/ -->
+	<target name="reRunFailedTests">
+		<mkdir dir="${reports}/reRunTests" />
+		<testng classpathref="classpaths" outputdir="${reports}/reRunTests">
+			<xmlfileset dir="${reprots.testng}" includes="testng-failed.xml" />
+			<sysproperty key="org.uncommons.reportng.title" value="Rerun report of failed tests" />
+			<sysproperty key="org.uncommons.reportng.escape-output" value="off" />
+		</testng>
+	</target>
+
+
+	<!-- /*****************************************************************************
+			Run the test cases as per the user inputduring runtime
+	***********************************************************************************/ -->
+	<target name="runAsInput" depends="cobertura-instruments">
+		<input message="Please select a group to run" addproperty="groupName" validargs="Smoke,Sanity" />
+		<input message="Do you want to Abort the Test Suite if a test cases fails" addproperty="abortTestSuite" validargs="true,false" />
+		<!--<propertyfile file="${config.properties}">
+			<entry key="abortTestRun" value="${abortTestSuite}" />
+		</propertyfile>-->
+		<input message="Please choose a browser to run" addproperty="browserName" validargs="firefox,chrome,ie,html" />
+		<!--<propertyfile file="${config.properties}">
+			<entry key="browser" value="${browserName}" />
+		</propertyfile>-->
+
+		<testng classpathref="classpaths" groups="${groupName}" outputdir="${reprots.testng}">
+			<xmlfileset dir="" includes="testng.xml" />
+			<sysproperty key="net.sourceforge.cobertura.datafile" file="${reports.cobertura}/cobertura.ser" />
+		</testng>
+	</target>
+
+
+	<!-- /*******************************************************************************
+			START - Task definitions for TestNg , Cobertura , Xslt , if-else conditions
+	************************************************************************************/ -->
+	<taskdef resource="testngtasks" description="Task definations for TestNG">
+		<classpath>
+			<pathelement location="${jars}/testng-6.0.1-nobsh-noguice.jar" />
+		</classpath>
+	</taskdef>
+
+	<!--<taskdef resource="tasks.properties" description="Task definations for Coburtura">
+		<classpath>
+			<pathelement location="${jars}/cobertura-1.9.4.1.jar" />
+			<pathelement location="${jars}/log4j-1.2.14.jar" />
+			<pathelement location="${jars}/asm-3.0.jar" />
+			<pathelement location="${jars}/jakarta-oro-2.0.8.jar" />
+			<pathelement location="${jars}/asm-tree-3.0.jar" />
+		</classpath>
+	</taskdef>-->
+
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" description="Task definations for If-Else conditons">
+		<classpath>
+			<pathelement location="${jars}/antcontrib.jar" />
+		</classpath>
+	</taskdef>
+
+	<!--<taskdef resource="?findout" description="Task definations for XSLT">
+		<classpath>
+			<pathelement location="${jars}/SaxonLiaison.jar" />
+			<pathelement location="${jars}/saxon-8.7.jar" />
+		</classpath>
+	</taskdef>-->
+	<!-- /*****************************************************************************
+			END - Task definitions for TestNg , Cobertura , Xslt , if-else conditions
+	***********************************************************************************/ -->
+</project>
