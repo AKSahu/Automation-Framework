@@ -1,7 +1,7 @@
 <suite name="Test Suite">
 	<test name="Test Case">
 		<packages>
-		    <package name="com.epocrates.test.tests" />
+		    <package name="com.ui.test.tests" />
 		</packages>
 	</test>	
 </suite>
@@ -10,7 +10,7 @@
 <suite name="Test Suite">
 	<test name="Test Case">
 		<classes>
-		    <class name="com.epocrates.test.tests.NaukriTest" />
+		    <class name="com.ui.test.tests.LoginPageTest" />
 		</classes>
 	</test>	
 </suite>
