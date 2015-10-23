@@ -21,6 +21,8 @@
 	<classpathentry kind="lib" path="lib/testng-6.0.1-nobsh-noguice.jar"/>
 	<classpathentry kind="lib" path="lib/velocity-dep-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/xmlbeans-2.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/selenium-server-standalone-2.47.1.jar"/>
+	<classpathentry kind="lib" path="lib/selenium-api-2.48.2.jar" sourcepath="lib/selenium-api-2.48.2-sources.jar"/>
+	<classpathentry kind="lib" path="lib/selenium-server-standalone-2.48.2.jar"/>
+	<classpathentry kind="lib" path="lib/selenium-api-2.48.2-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
